@@ -36,12 +36,23 @@ public partial class Playfield : Node2D {
         GetNode<Node2D>("Canvas/PlayfieldBorder").DrawRect(new Rect2(playfieldLeft, playfieldTop, playfieldWidth, playfieldHeight), new Color(0.5f, 0.5f, 0.5f), false, 2);
     }
 
-    public void SetBackground(string backgroundPath) {
+    public void SetBackground(string backgroundPath, float dim) {
         background = GetNode<Sprite2D>("Canvas/Background");
 
         // load from local file system
         Image img = Image.LoadFromFile(backgroundPath);
 
         background.Texture = ImageTexture.CreateFromImage(img);
+
+        float viewportWidth = GetViewport().GetCamera2D().GetViewportRect().Size.X;
+        float viewportHeight = GetViewport().GetCamera2D().GetViewportRect().Size.Y;
+
+        float scale = viewportWidth / background.Texture.GetSize().X;
+
+        background.Position = new Vector2(viewportWidth/2, viewportHeight/2);
+
+        background.Scale = new Vector2(scale, scale);
+
+        background.SelfModulate = new Color(1, 1, 1, 1 - dim);
     }
 }

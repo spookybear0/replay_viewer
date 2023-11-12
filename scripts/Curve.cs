@@ -6,8 +6,4 @@ public partial class Curve : Node2D {
     public override void _Ready() {
         curve = GetNode<Path2D>("Path2D").Curve;
     }
-
-    public override void _Draw() {
-
-    }
 }

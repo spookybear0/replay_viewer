@@ -44,12 +44,11 @@ texture_normal = ExtResource("4_8l3eh")
 script = ExtResource("5_rnt8r")
 
 [node name="Background" type="Sprite2D" parent="Playfield/Canvas"]
-centered = false
 region_rect = Rect2(0, 0, 100, 0)
 
 [node name="Cursor" parent="Playfield" instance=ExtResource("6_e1q0q")]
 process_priority = -1
-z_index = 5
+z_index = 20
 
 [node name="TrailRenderer" type="Node2D" parent="Playfield"]
 script = ExtResource("6_ei2kl")

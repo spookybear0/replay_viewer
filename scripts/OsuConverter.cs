@@ -71,6 +71,21 @@ public partial class OsuConverter : Node2D {
         return preemptTime;
     }
 
+    public static double ARToCompleteFadeInTime(float ar) {
+        double fadeInTime; // time before circle appears in ms
+        if (ar < 5) {
+            fadeInTime = 800 + 400 * (5 - ar) / 5;
+        }
+        else if (ar > 5) {
+            fadeInTime = 800 - 500 * (ar - 5) / 5;
+        } // is 5
+        else {
+            fadeInTime = 800;
+        }
+
+        return fadeInTime;
+    }
+
     public static float CSToScale(float cs) {
         return (1-(0.7f*(cs-5)/5))*(PlayfieldWidth()/16f)*2;
     }

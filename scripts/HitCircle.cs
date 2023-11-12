@@ -19,6 +19,7 @@ public partial class HitCircle : Area2D {
 	float volume;
 
 	public bool isSlider = false;
+	public HitSlider slider; // when isSlider is true, this wont be null
 
 	// numbers
 	static Texture2D number0;
@@ -82,15 +83,24 @@ public partial class HitCircle : Area2D {
 	}
 
 	public void objectHit() {
-		GD.Print("object hit");
 		// play the hit sound
 
 		HitsoundManager.playHitsound(hitsound, sampleSet, volume);
 
 		// fade out the hitcircle
 
-		animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 2;
-		animationPlayer.Play("fadeout");
+		animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 3;
+
+        animationPlayer.Play("hit");
+		
+		if (isSlider) {
+			Timer t = new Timer();
+			t.WaitTime = slider.timeLength / 1000;
+			t.OneShot = true;
+			t.Connect("timeout", new Callable(this, "fadeOutHitSlider"));
+			AddChild(t);
+			t.Start();
+		}
 	}
 
 	public static void loadTextures() {
@@ -140,25 +150,43 @@ public partial class HitCircle : Area2D {
 			animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		}
 
-		double fadeInTime = OsuConverter.ARToPreemptTime(ar);
+		fadeInTime = OsuConverter.ARToPreemptTime(ar);
 
 		animationPlayer.SpeedScale = 1 / ((float)fadeInTime / 1000);
 
 		animationPlayer.Play("fadein");
 	}
 
+	public void fadeOutHit() {
+		animationPlayer.Play("fadeout");
+	}
+
+	public void fadeOutHitSlider() {
+		animationPlayer.Play("fadeoutslider");
+	}
+
 	public void AnimationFinished(string name) {
-		if (name == "fadeout") {
+		if (name == "fadeout" || name == "fadeoutslider") {
 			QueueFree();
 		}
 
 		if (name == "fadein") {
-			//if (GameManager.mode == GameMode.Replay) {
-			//	objectHit();
-			//}
-			//else {
-				animationPlayer.Play("fadeout");
-			//}
+			if (GameManager.mode == GameMode.Replay) {
+				objectHit();
+			}
+			else {
+				if (isSlider) {
+					Timer t = new Timer();
+					t.WaitTime = slider.timeLength / 1000;
+					t.OneShot = true;
+					t.Connect("timeout", new Callable(this, "fadeOutHit"));
+					AddChild(t);
+					t.Start();
+				}
+				else {
+					fadeOutHit();
+				}
+			}
 		}
 	}
 

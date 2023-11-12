@@ -12,25 +12,30 @@ public partial class BeatmapManager : Node2D {
 
     PackedScene hitCircleScene;
     PackedScene hitSliderScene;
+    PackedScene hitSpinnerScene;
     AudioStreamPlayer audioStreamPlayer;
     Cursor cursor;
     
     int hitObjectIndex = 0;
-    double totalDeltaTime = 0;
+    public double totalDeltaTime = 0;
     int currentCombo = 1;
     bool skipped = false;
     OsuParsers.Beatmaps.Objects.TimingPoint currentTimingPoint;
 
     int replayFrameIndex = 0;
 
+
+    public OsuParsers.Replays.Objects.ReplayFrame replayFrame;
+
     public override void _Ready() {
         hitCircleScene = ResourceLoader.Load<PackedScene>("res://objects/hit_circle.tscn");
         hitSliderScene = ResourceLoader.Load<PackedScene>("res://objects/hit_slider.tscn");
+        hitSpinnerScene = ResourceLoader.Load<PackedScene>("res://objects/hit_spinner.tscn");
         audioStreamPlayer = GetNode<AudioStreamPlayer>("Player");
         cursor = GetNode<Cursor>("/root/Scene/Playfield/Cursor");
 
-        PlayBeatmap("D:/games/osu!/Songs/833927 Weird Al Yankovic - Hardware Store/Weird Al Yankovic - Hardware Store (Mr Moseby) [Matching Salt And Pepper Shakers].osu");
-        PlayReplay("D:/games/osu!/Replays/BlackDog5 - Weird Al Yankovic - Hardware Store [Matching Salt And Pepper Shakers] (2020-10-11) Osu.osr");
+        PlayBeatmap("D:/games/osu!/Songs/813569 Laur - Sound Chimera/Laur - Sound Chimera (Nattu) [Chimera].osu");
+        PlayReplay("D:/games/osu!/Replays/BlackDog5 - Laur - Sound Chimera [Chimera] (2021-03-19) Osu.osr");
     }
 
     public void PlayBeatmap(string beatmapPath) {
@@ -66,7 +71,9 @@ public partial class BeatmapManager : Node2D {
 
         // background image
 
-        //GetNode<Playfield>("/root/Scene/Playfield").SetBackground(beatmapFolder + "/" + beatmap.EventsSection.BackgroundImage);
+        GetNode<Playfield>("/root/Scene/Playfield").SetBackground(beatmapFolder + "/" + beatmap.EventsSection.BackgroundImage, 0.8f);
+
+
     }
 
     public void PlayReplay(string replayPath) {
@@ -108,38 +115,38 @@ public partial class BeatmapManager : Node2D {
     }
 
     public void ProcessReplay(double delta) {
-        if (replay == null) {
+        if (replay == null || replayFrameIndex >= replay.ReplayFrames.Count) {
             return;
         }
 
-        OsuParsers.Replays.Objects.ReplayFrame frame = replay.ReplayFrames[replayFrameIndex];
+        replayFrame = replay.ReplayFrames[replayFrameIndex];
 
         if (replayFrameIndex >= replay.ReplayFrames.Count) {
             return;
         }
 
-        if (frame.Time <= totalDeltaTime * 1000) {
-            cursor.Position = OsuConverter.OsuPixelToGodotPixel(frame.X, frame.Y);
+        if (replayFrame.Time <= totalDeltaTime * 1000) {
+            cursor.Position = OsuConverter.OsuPixelToGodotPixel(replayFrame.X, replayFrame.Y);
 
             InputEventAction action = new InputEventAction();
             action.Pressed = true;
-            if (frame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.K1)) {
+            if (replayFrame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.K1)) {
                 action.Action = "key_1";
                 Input.ParseInputEvent(action);
             }
-            else if (frame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.K2)) {
+            else if (replayFrame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.K2)) {
                 action.Action = "key_2";
                 Input.ParseInputEvent(action);
             }
-            else if (frame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.M1)) {
+            else if (replayFrame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.M1)) {
                 action.Action = "mouse_1";
                 Input.ParseInputEvent(action);
             }
-            else if (frame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.M2)) {
+            else if (replayFrame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.M2)) {
                 action.Action = "mouse_2";
                 Input.ParseInputEvent(action);
             }
-            else if (frame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.Smoke)) {
+            else if (replayFrame.StandardKeys.HasFlag(OsuParsers.Enums.Replays.StandardKeys.Smoke)) {
                 //Input.ActionPress("key_smoke");
             }
 
@@ -169,7 +176,9 @@ public partial class BeatmapManager : Node2D {
         
 
         if (currentTimingPoint.Offset <= totalDeltaTime * 1000) {
-            currentTimingPoint = beatmap.TimingPoints[beatmap.TimingPoints.IndexOf(currentTimingPoint) + 1];
+            if (!(beatmap.TimingPoints.IndexOf(currentTimingPoint) + 1 >= beatmap.TimingPoints.Count)) {
+                currentTimingPoint = beatmap.TimingPoints[beatmap.TimingPoints.IndexOf(currentTimingPoint) + 1];
+            }
         }
 
         if (currentTimingPoint.SampleSet == OsuParsers.Enums.Beatmaps.SampleSet.None) {
@@ -221,9 +230,10 @@ public partial class BeatmapManager : Node2D {
             HitSlider hitSlider = hitSliderScene.Instantiate<HitSlider>();
 
             hitSlider.circle = hitSlider.GetNode<HitCircle>("HitCircle");
-            hitSlider.line2d = hitSlider.GetNode<Line2D>("Line2D");
+            hitSlider.line2d = hitSlider.GetNode<Line2D>("CanvasGroup/Line2D");
             
             hitSlider.circle.isSlider = true;
+            hitSlider.circle.slider = hitSlider;
 
             hitSlider.circle.setCS(beatmap.DifficultySection.CircleSize, GetNode<Playfield>("../Playfield"));
             hitSlider.circle.setHitsoundSettings(slider.HitSound, currentTimingPoint.SampleSet, currentTimingPoint.Volume);
@@ -232,6 +242,9 @@ public partial class BeatmapManager : Node2D {
 
             hitSlider.line2d.AddPoint(new Vector2(0, 0));
             hitSlider.curveType = slider.CurveType;
+            hitSlider.pixelLength = slider.PixelLength;
+            hitSlider.repeatCount = slider.Repeats - 1;
+            hitSlider.timeLength = slider.TotalTimeSpan.TotalMilliseconds;
 
             foreach (System.Numerics.Vector2 point in slider.SliderPoints) {
                 Vector2 vec = OsuConverter.OsuPixelToGodotPixel(point.X, point.Y) - hitSlider.Position;
@@ -243,6 +256,23 @@ public partial class BeatmapManager : Node2D {
             hitSlider.circle.fadeIn(beatmap.DifficultySection.ApproachRate);
 
             currentCombo++;
+        }
+        else if (obj is OsuParsers.Beatmaps.Objects.Spinner) {
+            OsuParsers.Beatmaps.Objects.Spinner spinner = (OsuParsers.Beatmaps.Objects.Spinner)obj;
+            // check if spinner is able to be shown
+
+            if (totalDeltaTime*1000 <= spinner.StartTime) {
+                return;
+            }
+
+            currentCombo = 1;
+
+            HitSpinner hitSpinner = hitSpinnerScene.Instantiate<HitSpinner>();
+
+            hitSpinner.endTime = spinner.EndTime;
+
+            GetNode<Node2D>("../").CallDeferred("add_child", hitSpinner);
+            hitSpinner.fadeIn(beatmap.DifficultySection.ApproachRate);
         }
         hitObjectIndex++;
     }
