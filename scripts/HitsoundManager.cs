@@ -65,7 +65,20 @@ public partial class HitsoundManager : Node2D {
     public static void playHitsound(OsuParsers.Enums.Beatmaps.HitSoundType hitsound, OsuParsers.Enums.Beatmaps.SampleSet sampleSet, float volume) {
         // TODO: volume
 
-        audioStreamPlayer.Stream = normalHitNormal;
+        switch (sampleSet) {
+            case OsuParsers.Enums.Beatmaps.SampleSet.Drum:
+                audioStreamPlayer.Stream = drumHitNormal;
+                break;
+            case OsuParsers.Enums.Beatmaps.SampleSet.Normal:
+                audioStreamPlayer.Stream = normalHitNormal;
+                break;
+            case OsuParsers.Enums.Beatmaps.SampleSet.Soft:
+                audioStreamPlayer.Stream = softHitNormal;
+                break;
+            default:
+                break;
+        }
+
         audioStreamPlayer.Play();
 
 		if (hitsound.HasFlag(OsuParsers.Enums.Beatmaps.HitSoundType.Whistle)) {

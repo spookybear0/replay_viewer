@@ -1,9 +1,19 @@
-[gd_scene load_steps=11 format=3 uid="uid://c3856nbtttne4"]
+[gd_scene load_steps=13 format=3 uid="uid://c0h2l6fyaytkv"]
 
 [ext_resource type="Script" path="res://scripts/HitSlider.cs" id="1_kipkw"]
 [ext_resource type="PackedScene" uid="uid://bi05wifikthea" path="res://objects/hit_circle.tscn" id="2_c3tet"]
-[ext_resource type="Shader" path="res://objects/hit_slider.gdshader" id="3_kmay5"]
+[ext_resource type="Shader" path="res://objects/slider_outline.gdshader" id="3_8albi"]
 [ext_resource type="Texture2D" uid="uid://bk0fmvpwymo14" path="res://assets/white_pixel.png" id="4_4dunc"]
+[ext_resource type="Shader" path="res://objects/slider_color.gdshader" id="4_desdd"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_48ywg"]
+shader = ExtResource("3_8albi")
+shader_parameter/line_thickness = 7.0
+shader_parameter/line_color = Color(1, 1, 1, 1)
+shader_parameter/enabled = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_15bb0"]
+shader = ExtResource("4_desdd")
 
 [sub_resource type="Animation" id="Animation_dvl0e"]
 resource_name = "fadein"
@@ -59,7 +69,7 @@ tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
 "handle_modes": PackedInt32Array(0, 0),
-"points": PackedFloat32Array(6, -0.25, 0, 0.25, 0, 2.15, -0.25, 0, 0.25, 0),
+"points": PackedFloat32Array(6, -0.25, 0, 0.25, 0, 2, -0.25, 0, 0.25, 0),
 "times": PackedFloat32Array(0, 1)
 }
 tracks/5/type = "bezier"
@@ -443,9 +453,6 @@ _data = {
 "hit": SubResource("Animation_6awgh")
 }
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_15bb0"]
-shader = ExtResource("3_kmay5")
-
 [node name="HitSlider" type="Node2D"]
 script = ExtResource("1_kipkw")
 
@@ -453,36 +460,13 @@ script = ExtResource("1_kipkw")
 show_behind_parent = true
 z_index = 5
 
-[node name="Outline" parent="HitCircle" index="0"]
-modulate = Color(1, 1, 1, 0)
-
-[node name="Overlay" parent="HitCircle" index="1"]
-modulate = Color(1, 1, 1, 0)
-
-[node name="Shader" parent="HitCircle" index="2"]
-modulate = Color(1, 1, 1, 0)
-
-[node name="Combo" parent="HitCircle" index="3"]
-modulate = Color(1, 1, 1, 0)
-
 [node name="ApproachCircle" parent="HitCircle" index="4"]
-modulate = Color(1, 1, 1, 0)
-scale = Vector2(6, 6)
-
-[node name="Combo1" parent="HitCircle" index="5"]
-modulate = Color(1, 1, 1, 0)
-
-[node name="Combo2" parent="HitCircle" index="6"]
-modulate = Color(1, 1, 1, 0)
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-root_node = NodePath("../HitCircle")
-libraries = {
-"": SubResource("AnimationLibrary_8ya8a")
-}
+modulate = Color(1, 1, 1, 2)
+scale = Vector2(2, 2)
 
 [node name="CanvasGroup" type="CanvasGroup" parent="."]
-self_modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_48ywg")
+use_mipmaps = true
 
 [node name="Line2D" type="Line2D" parent="CanvasGroup"]
 process_priority = -2
@@ -497,5 +481,11 @@ begin_cap_mode = 2
 end_cap_mode = 2
 round_precision = 10
 antialiased = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("../HitCircle")
+libraries = {
+"": SubResource("AnimationLibrary_8ya8a")
+}
 
 [editable path="HitCircle"]

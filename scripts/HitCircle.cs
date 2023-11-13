@@ -89,7 +89,7 @@ public partial class HitCircle : Area2D {
 
 		// fade out the hitcircle
 
-		animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 3;
+		animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 4;
 
         animationPlayer.Play("hit");
 		
@@ -166,8 +166,18 @@ public partial class HitCircle : Area2D {
 	}
 
 	public void AnimationFinished(string name) {
-		if (name == "fadeout" || name == "fadeoutslider") {
-			QueueFree();
+		if (name == "fadeout" || name == "fadeoutslider" || name == "hit") {
+            // remove the slider from the scene tree
+            if (isSlider) {
+                if (name != "hit") {
+                    GetParent().GetParent().RemoveChild(slider);
+                    slider.QueueFree();
+                }
+            }
+            else {
+                GetParent().RemoveChild(this);
+                QueueFree();
+            }
 		}
 
 		if (name == "fadein") {

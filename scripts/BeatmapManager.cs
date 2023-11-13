@@ -36,6 +36,9 @@ public partial class BeatmapManager : Node2D {
 
         PlayBeatmap("D:/games/osu!/Songs/813569 Laur - Sound Chimera/Laur - Sound Chimera (Nattu) [Chimera].osu");
         PlayReplay("D:/games/osu!/Replays/BlackDog5 - Laur - Sound Chimera [Chimera] (2021-03-19) Osu.osr");
+        //PlayBeatmap("D:/games/osu!/Songs/437683 Halozy - Kikoku Doukoku Jigokuraku/Halozy - Kikoku Doukoku Jigokuraku (Hollow Wings) [Notch Hell].osu");
+        //PlayReplay("D:/games/osu!/Replays/Xilver15 - Halozy - Kikoku Doukoku Jigokuraku [Notch Hell] (2019-07-26) Osu.osr");
+        
     }
 
     public void PlayBeatmap(string beatmapPath) {
