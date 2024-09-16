@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 
 public partial class BeatmapManager : Node2D {
-    OsuParsers.Beatmaps.Beatmap beatmap;
+    public OsuParsers.Beatmaps.Beatmap beatmap;
+
+
     string beatmapFolder;
     double songOffset = 0;
 
@@ -20,7 +22,8 @@ public partial class BeatmapManager : Node2D {
     public double totalDeltaTime = 0;
     int currentCombo = 1;
     bool skipped = false;
-    OsuParsers.Beatmaps.Objects.TimingPoint currentTimingPoint;
+    public OsuParsers.Beatmaps.Objects.TimingPoint currentTimingPoint;
+    public Node2D currentHitObject;
 
     int replayFrameIndex = 0;
 
@@ -34,11 +37,14 @@ public partial class BeatmapManager : Node2D {
         audioStreamPlayer = GetNode<AudioStreamPlayer>("Player");
         cursor = GetNode<Cursor>("/root/Scene/Playfield/Cursor");
 
+        //Engine.TimeScale = 0.25f;
+
         PlayBeatmap("D:/games/osu!/Songs/813569 Laur - Sound Chimera/Laur - Sound Chimera (Nattu) [Chimera].osu");
-        PlayReplay("D:/games/osu!/Replays/BlackDog5 - Laur - Sound Chimera [Chimera] (2021-03-19) Osu.osr");
+        GameManager.mode = GameMode.Auto;
+        //PlayReplay("D:/games/osu!/Replays/BlackDog5 - Laur - Sound Chimera [Chimera] (2021-03-19) Osu.osr");
         //PlayBeatmap("D:/games/osu!/Songs/437683 Halozy - Kikoku Doukoku Jigokuraku/Halozy - Kikoku Doukoku Jigokuraku (Hollow Wings) [Notch Hell].osu");
         //PlayReplay("D:/games/osu!/Replays/Xilver15 - Halozy - Kikoku Doukoku Jigokuraku [Notch Hell] (2019-07-26) Osu.osr");
-        
+        //PlayBeatmap("D:/games/osu!/Songs/41823 The Quick Brown Fox - The Big Black/The Quick Brown Fox - The Big Black (Blue Dragon) [WHO'S AFRAID OF THE BIG BLACK].osu");
     }
 
     public void PlayBeatmap(string beatmapPath) {
@@ -205,9 +211,19 @@ public partial class BeatmapManager : Node2D {
             }
 
             HitCircle hitCircle = hitCircleScene.Instantiate<HitCircle>();
+            currentHitObject = hitCircle;
 
-            hitCircle.setCS(beatmap.DifficultySection.CircleSize, GetNode<Playfield>("../Playfield"));
-            hitCircle.setHitsoundSettings(circle.HitSound, currentTimingPoint.SampleSet, currentTimingPoint.Volume);
+            OsuParsers.Enums.Beatmaps.SampleSet sampleSet = currentTimingPoint.SampleSet;
+
+            if (circle.Extras.SampleSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                sampleSet = circle.Extras.SampleSet;
+            }
+
+            OsuParsers.Enums.Beatmaps.SampleSet additionSet = circle.Extras.AdditionSet;
+
+            hitCircle.startTime = circle.StartTime;
+            hitCircle.setCS(beatmap.DifficultySection.CircleSize);
+            hitCircle.setHitsoundSettings(circle.HitSound, sampleSet, additionSet, currentTimingPoint.Volume);
             hitCircle.Position = OsuConverter.OsuPixelToGodotPixel(circle.Position);
             hitCircle.setComboNumber(currentCombo);
 
@@ -231,6 +247,16 @@ public partial class BeatmapManager : Node2D {
             }
 
             HitSlider hitSlider = hitSliderScene.Instantiate<HitSlider>();
+            currentHitObject = hitSlider;
+
+            OsuParsers.Enums.Beatmaps.SampleSet sampleSet = currentTimingPoint.SampleSet;
+
+            if (slider.Extras.SampleSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                sampleSet = slider.Extras.SampleSet;
+            }
+
+            OsuParsers.Enums.Beatmaps.SampleSet additionSet = slider.Extras.AdditionSet;
+
 
             hitSlider.circle = hitSlider.GetNode<HitCircle>("HitCircle");
             hitSlider.line2d = hitSlider.GetNode<Line2D>("CanvasGroup/Line2D");
@@ -238,8 +264,8 @@ public partial class BeatmapManager : Node2D {
             hitSlider.circle.isSlider = true;
             hitSlider.circle.slider = hitSlider;
 
-            hitSlider.circle.setCS(beatmap.DifficultySection.CircleSize, GetNode<Playfield>("../Playfield"));
-            hitSlider.circle.setHitsoundSettings(slider.HitSound, currentTimingPoint.SampleSet, currentTimingPoint.Volume);
+            hitSlider.circle.setCS(beatmap.DifficultySection.CircleSize);
+            hitSlider.circle.setHitsoundSettings(slider.HitSound, sampleSet, additionSet, currentTimingPoint.Volume);
             hitSlider.Position = OsuConverter.OsuPixelToGodotPixel(slider.Position.X, slider.Position.Y);
             hitSlider.circle.setComboNumber(currentCombo);
 
@@ -248,6 +274,9 @@ public partial class BeatmapManager : Node2D {
             hitSlider.pixelLength = slider.PixelLength;
             hitSlider.repeatCount = slider.Repeats - 1;
             hitSlider.timeLength = slider.TotalTimeSpan.TotalMilliseconds;
+            hitSlider.edgeAdditions = slider.EdgeAdditions;
+            hitSlider.edgeHitsounds = slider.EdgeHitSounds;
+            hitSlider.SetCS(beatmap.DifficultySection.CircleSize);
 
             foreach (System.Numerics.Vector2 point in slider.SliderPoints) {
                 Vector2 vec = OsuConverter.OsuPixelToGodotPixel(point.X, point.Y) - hitSlider.Position;
@@ -271,8 +300,21 @@ public partial class BeatmapManager : Node2D {
             currentCombo = 1;
 
             HitSpinner hitSpinner = hitSpinnerScene.Instantiate<HitSpinner>();
+            currentHitObject = hitSpinner;
+
+            OsuParsers.Enums.Beatmaps.SampleSet sampleSet = currentTimingPoint.SampleSet;
+
+            if (spinner.Extras.SampleSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                sampleSet = spinner.Extras.SampleSet;
+            }
+
+            OsuParsers.Enums.Beatmaps.SampleSet additionSet = spinner.Extras.AdditionSet;
 
             hitSpinner.endTime = spinner.EndTime;
+            hitSpinner.hitsound = spinner.HitSound;
+            hitSpinner.sampleSet = sampleSet;
+            hitSpinner.additionSet = additionSet;
+            hitSpinner.volume = currentTimingPoint.Volume;
 
             GetNode<Node2D>("../").CallDeferred("add_child", hitSpinner);
             hitSpinner.fadeIn(beatmap.DifficultySection.ApproachRate);

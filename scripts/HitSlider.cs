@@ -1,23 +1,55 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class HitSlider : Node2D {
     public Line2D line2d;
     public CanvasGroup canvasgroup;
     public HitCircle circle;
+    public Sprite2D repeat;
+    public Sprite2D repeat2;
     public List<Vector2> points = new List<Vector2>();
     public OsuParsers.Enums.Beatmaps.CurveType curveType;
+    public double endTime;
     public double timeLength;
+    public double timeLengthPerRepeat;
     public int repeatCount;
     public double pixelLength;
+    public List<Tuple<OsuParsers.Enums.Beatmaps.SampleSet, OsuParsers.Enums.Beatmaps.SampleSet>> edgeAdditions;
+    public List<OsuParsers.Enums.Beatmaps.HitSoundType> edgeHitsounds;
+    public bool oddRepeat = false;
+    public int timesRepeated = 0;
+    public AnimationPlayer animationPlayerRepeat;
+    public AnimationPlayer animationPlayerRepeat2;
+    public Path2D path2d;
+    public PathFollow2D pathFollow2D;
+    public Sprite2D followCircle;
+    public Sprite2D automaticFollowCircle;
+    public AnimationPlayer animationPlayerFollowCircle;
 
-    private float precision = 0.01f;
+    private BeatmapManager beatmap_mgr;
+
+    private float precision = 0.05f;
 
     public override void _Ready() {
         line2d = GetNode<Line2D>("CanvasGroup/Line2D");
         canvasgroup = GetNode<CanvasGroup>("CanvasGroup");
         circle = GetNode<HitCircle>("HitCircle");
+        beatmap_mgr = GetNode<BeatmapManager>("../BeatmapManager");
+        repeat = GetNode<Sprite2D>("Repeat");
+        repeat2 = GetNode<Sprite2D>("Repeat2");
+        animationPlayerRepeat = GetNode<AnimationPlayer>("AnimationPlayerRepeat");
+        animationPlayerRepeat2 = GetNode<AnimationPlayer>("AnimationPlayerRepeat2");
+        path2d = GetNode<Path2D>("Path2D");
+        pathFollow2D = GetNode<PathFollow2D>("Path2D/PathFollow2D");
+        followCircle = GetNode<Sprite2D>("Path2D/PathFollow2D/FollowCircle"); // make this visible when holding
+        automaticFollowCircle = GetNode<Sprite2D>("Path2D/PathFollow2D/AutomaticFollowCircle"); // for automatic follows
+        animationPlayerFollowCircle = GetNode<AnimationPlayer>("AnimationPlayerFollowCircle"); // for automatic follows
+
+        path2d.Curve = new Curve2D();
+
+        circle.animationPlayer.Connect("animation_finished", new Callable(this, "AnimationFinished"));
 
         line2d.Points = new Vector2[] { };
 
@@ -49,14 +81,136 @@ public partial class HitSlider : Node2D {
 
         line2d.Points = reversedPoints;
 
+        // add points to path2d (including repeat points)
+
+        for (int i = 0; i < repeatCount + 1; i++) {
+            for (int j = 0; j < line2d.Points.Length; j++) {
+                if (i % 2 == 0) {
+                    path2d.Curve.AddPoint(line2d.Points[line2d.Points.Length - 1 - j]);
+                }
+                else {
+                    path2d.Curve.AddPoint(line2d.Points[j]);
+                }
+            }
+        }
+
         // set default opacity to 0
 
         canvasgroup.SelfModulate = new Color(1, 1, 1, 0);
 
-        // set lengths
+        // time length
 
+        endTime = circle.startTime + CalculateTimeLength();
+
+        timeLengthPerRepeat = timeLength / (repeatCount + 1);
+
+        repeat.Modulate = new Color(1, 1, 1, 0);
+        repeat2.Modulate = new Color(1, 1, 1, 0);
+
+        animationPlayerRepeat.SpeedScale =  1 / ((float)circle.fadeInTime / 1000);
+        animationPlayerRepeat2.SpeedScale =  1 / ((float)circle.fadeInTime / 1000);
+
+        // repeats
+
+        if (repeatCount > 0) {
+            oddRepeat = true;
+            repeat.Position = line2d.Points[0];
+            animationPlayerRepeat.Play("fadein");
+
+            // face towards the next point
+            // TODO
+
+            repeat.LookAt(ToGlobal(line2d.Points[1]));
+        }
+
+        // automatic follow circle
+
+        automaticFollowCircle.GlobalPosition = ToGlobal(line2d.Points[line2d.Points.Length - 1]);
+        automaticFollowCircle.Modulate = new Color(1, 1, 1, 0);
+
+        // fix follow animation
+
+        //GD.Print(animationPlayerFollowCircle.GetAnimation("follow").TrackGetKeyCount(0));
+        //Animation animation = animationPlayerFollowCircle.GetAnimation("follow"); //animation.FindTrack("Path2D/PathFollow2D:progress", Animation.TrackType.Value)
+        //animation.BezierTrackSetKeyValue(0, 1, (float)pixelLength);
 
     }
+
+    public void AnimationFinished(string name) {
+        // hitcircle animation finished
+        if (name == "fadein") {
+            // repeat stuff
+            if (repeatCount > 0) {
+                // hide after it's "hit"
+                Timer t = new Timer();
+                t.WaitTime = timeLengthPerRepeat / 1000;
+                t.OneShot = true;
+                t.Connect("timeout", new Callable(this, "HitRepeat"));
+                AddChild(t);
+                t.Start();
+            }
+
+            // slider follow circle
+
+            animationPlayerFollowCircle.SpeedScale = 1 / ((float)timeLength / 1000);
+
+            animationPlayerFollowCircle.Play("follow");
+        }
+    }
+
+    public double CalculateTimeLength() {
+        // return the time length of the slider in milliseconds
+        return pixelLength / (100d * beatmap_mgr.beatmap.DifficultySection.SliderMultiplier) * (repeatCount+1) * beatmap_mgr.beatmap.BeatLengthAt((int)circle.startTime);
+    }
+
+    public void HitRepeat() {
+        HitsoundManager.playHitsound(OsuParsers.Enums.Beatmaps.HitSoundType.Normal, OsuParsers.Enums.Beatmaps.SampleSet.Normal, OsuParsers.Enums.Beatmaps.SampleSet.None, 1);
+
+        timesRepeated++;
+        if (oddRepeat) {
+            animationPlayerRepeat.Play("fadeout");
+            if (timesRepeated < repeatCount) {
+                repeat2.Position = line2d.Points[line2d.Points.Length - 1];
+                repeat2.LookAt(ToGlobal(line2d.Points[line2d.Points.Length - 2]));
+                animationPlayerRepeat2.Play("fadein");
+                Timer t = new Timer();
+                t.WaitTime = timeLengthPerRepeat / 1000;
+                t.OneShot = true;
+                t.Connect("timeout", new Callable(this, "HitRepeat"));
+                AddChild(t);
+                t.Start();
+            }
+            oddRepeat = false;
+        }
+        else {
+            animationPlayerRepeat2.Play("fadeout");
+            if (timesRepeated < repeatCount) {
+                repeat.Position = line2d.Points[0];
+                repeat.LookAt(ToGlobal(line2d.Points[1]));
+                animationPlayerRepeat.Play("fadein");
+                Timer t = new Timer();
+                t.WaitTime = timeLengthPerRepeat / 1000;
+                t.OneShot = true;
+                t.Connect("timeout", new Callable(this, "HitRepeat"));
+                AddChild(t);
+                t.Start();
+            }
+            oddRepeat = true;
+        }
+    }
+
+	public void SetCS(float cs) {
+        repeat = GetNode<Sprite2D>("Repeat");
+        repeat2 = GetNode<Sprite2D>("Repeat2");
+        followCircle = GetNode<Sprite2D>("Path2D/PathFollow2D/FollowCircle");
+        automaticFollowCircle = GetNode<Sprite2D>("Path2D/PathFollow2D/AutomaticFollowCircle");
+		float csScale = OsuConverter.CSToScale(cs);
+
+		repeat.Scale = new Vector2(csScale/repeat.Texture.GetSize().X, csScale/repeat.Texture.GetSize().Y);
+        repeat2.Scale = new Vector2(csScale/repeat2.Texture.GetSize().X, csScale/repeat2.Texture.GetSize().Y);
+        followCircle.Scale = new Vector2(csScale/followCircle.Texture.GetSize().X, csScale/followCircle.Texture.GetSize().Y) * 1.5f;
+        automaticFollowCircle.Scale = new Vector2(csScale/automaticFollowCircle.Texture.GetSize().X, csScale/automaticFollowCircle.Texture.GetSize().Y) * 1.5f;
+	}
 
     // TODO: implement perfect curve
 
@@ -236,6 +390,6 @@ public partial class HitSlider : Node2D {
             return;
         }
 
-
+        // TODO: take trigonometry
     }
 }

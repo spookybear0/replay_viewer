@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 
 public partial class HitSpinner : Node2D {
-    AnimationPlayer animationPlayer;
+    public AnimationPlayer animationPlayer;
     BeatmapManager beatmap_mgr;
     GameManager game_mgr;
     Cursor cursor;
@@ -14,9 +14,12 @@ public partial class HitSpinner : Node2D {
 
     public OsuParsers.Enums.Beatmaps.HitSoundType hitsound;
     public OsuParsers.Enums.Beatmaps.SampleSet sampleSet;
+    public OsuParsers.Enums.Beatmaps.SampleSet additionSet;
     public float volume;
-
+    public bool fadedIn = false;
     private float rotationSpeed = 0.0f;
+
+    public bool autoSpinning = false;
 
     public override void _Ready() {
         animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
@@ -25,7 +28,8 @@ public partial class HitSpinner : Node2D {
 
         animationPlayer.Connect("animation_finished", new Callable(this, "AnimationFinished"));
 
-        Position = OsuConverter.OsuPixelToGodotPixel(256, 192);
+        // get center of screen
+        Position = new Vector2(OsuConverter.PlayfieldLeft() + OsuConverter.PlayfieldWidth() / 2, OsuConverter.PlayfieldTop() + OsuConverter.PlayfieldHeight() / 2);
     }
 
     public override void _Process(double delta) {
@@ -48,7 +52,9 @@ public partial class HitSpinner : Node2D {
             ((Input.IsActionPressed("key_1") ||
             Input.IsActionPressed("key_2") ||
             Input.IsActionPressed("mouse_1") ||
-            Input.IsActionPressed("mouse_2")) && GameManager.mode == GameMode.Playing)
+            Input.IsActionPressed("mouse_2")) && GameManager.mode == GameMode.Playing) ||
+            // auto
+            (GameManager.mode == GameMode.Auto && fadedIn)
         ) {
             // Get the mouse position
             Vector2 cursorPosition = cursor.GlobalPosition;
@@ -73,11 +79,13 @@ public partial class HitSpinner : Node2D {
 		animationPlayer.SpeedScale = 1 / ((float)fadeInTime / 1000);
 
 		animationPlayer.Play("fadein");
+
+        fadedIn = true;
 	}
 
 	public void AnimationFinished(string name) {
 		if (name == "fadeout") {
-			QueueFree();
+			//QueueFree();
 		}
 
         if (name == "fadein") {
@@ -90,9 +98,11 @@ public partial class HitSpinner : Node2D {
         }
 
         if (name == "approach") {
-            animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 3;
+            animationPlayer.SpeedScale = (1 / ((float)fadeInTime / 1000)) * 5;
             animationPlayer.Play("fadeout");
             fadingOut = true;
+
+            HitsoundManager.playHitsound(hitsound, sampleSet, additionSet, volume);
         }
 	}
 }

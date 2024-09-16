@@ -12,14 +12,25 @@ public partial class HitCircle : Area2D {
 	Sprite2D circleCombo1;
 	Sprite2D circleCombo2;
 	Sprite2D approachCircle;
-	AnimationPlayer animationPlayer;
-	double fadeInTime;
-	OsuParsers.Enums.Beatmaps.HitSoundType hitsound;
-	OsuParsers.Enums.Beatmaps.SampleSet sampleSet;
-	float volume;
+    CollisionShape2D hitbox;
+	public AnimationPlayer animationPlayer;
+	public double fadeInTime;
+	public OsuParsers.Enums.Beatmaps.HitSoundType hitsound;
+	public OsuParsers.Enums.Beatmaps.SampleSet sampleSet;
+    public OsuParsers.Enums.Beatmaps.SampleSet additionSet;
+	public float volume;
+
+    public double startTime;
 
 	public bool isSlider = false;
 	public HitSlider slider; // when isSlider is true, this wont be null
+
+    public bool fadingIn = false;
+    public bool fadedIn = false;
+
+    // auto
+
+    public bool autoFollowing = false;
 
 	// numbers
 	static Texture2D number0;
@@ -50,6 +61,8 @@ public partial class HitCircle : Area2D {
 		circleCombo1 = GetNode<Sprite2D>("Combo1");
 		circleCombo2 = GetNode<Sprite2D>("Combo2");
 		approachCircle = GetNode<Sprite2D>("ApproachCircle");
+        hitbox = GetNode<CollisionShape2D>("Hitbox");
+
 
 		if (isSlider) {
 			animationPlayer = GetNode<AnimationPlayer>("../AnimationPlayer");
@@ -70,7 +83,7 @@ public partial class HitCircle : Area2D {
 		approachCircle.Modulate = new Color(1, 1, 1, 0);
 	}
 
-	public void areaEntered(Area2D area) {
+    public void areaEntered(Area2D area) {
 		if (area.Name == "CursorArea") {
 			cursorInside = true;
 		}
@@ -84,8 +97,26 @@ public partial class HitCircle : Area2D {
 
 	public void objectHit() {
 		// play the hit sound
+        clicked = true;
 
-		HitsoundManager.playHitsound(hitsound, sampleSet, volume);
+        if (isSlider) {
+            if (slider.edgeHitsounds != null && slider.edgeAdditions != null) {
+                // sliders store hitsounds differently
+                HitsoundManager.playHitsound(
+                    slider.edgeHitsounds[0],
+                    slider.edgeAdditions[0].Item1,
+                    slider.edgeAdditions[0].Item2,
+                    volume
+                );
+            }
+            else {
+                // no hitsounds, this will just play the default hitsound with no additions
+                HitsoundManager.playHitsound(hitsound, sampleSet, additionSet, volume);
+            }
+        }
+		else {
+            HitsoundManager.playHitsound(hitsound, sampleSet, additionSet, volume);
+        }
 
 		// fade out the hitcircle
 
@@ -97,7 +128,7 @@ public partial class HitCircle : Area2D {
 			Timer t = new Timer();
 			t.WaitTime = slider.timeLength / 1000;
 			t.OneShot = true;
-			t.Connect("timeout", new Callable(this, "fadeOutHitSlider"));
+			t.Connect("timeout", new Callable(this, "fadeOutSlider"));
 			AddChild(t);
 			t.Start();
 		}
@@ -120,8 +151,8 @@ public partial class HitCircle : Area2D {
 		texturesLoaded = true;
 	}
 
-	public override void _Input(InputEvent @event) {
-		if (cursorInside) {
+    public override void _Input(InputEvent @event) {
+		if (cursorInside && !clicked) {
 			// check if key_1, key_2, mouse_1, or mouse_2 is pressed
 			if ((@event.IsActionPressed("key_1") || @event.IsActionPressed("key_2") ||
 				@event.IsActionPressed("mouse_1") || @event.IsActionPressed("mouse_2")) &&
@@ -134,12 +165,14 @@ public partial class HitCircle : Area2D {
 	}
 
 
-	public void setCS(float cs, Playfield playfield) {
+	public void setCS(float cs) {
 		circleOverlay = GetNode<Sprite2D>("Overlay");
+        hitbox = GetNode<CollisionShape2D>("Hitbox");
 
 		float csScale = OsuConverter.CSToScale(cs);
 
 		Scale = new Vector2(csScale/circleOverlay.Texture.GetSize().X, csScale/circleOverlay.Texture.GetSize().Y);
+        hitbox.Scale = new Vector2(csScale / circleOverlay.Texture.GetSize().X, csScale / circleOverlay.Texture.GetSize().Y);
 	}
 
 	public void fadeIn(float ar) {
@@ -150,6 +183,8 @@ public partial class HitCircle : Area2D {
 			animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		}
 
+        fadingIn = true;
+
 		fadeInTime = OsuConverter.ARToPreemptTime(ar);
 
 		animationPlayer.SpeedScale = 1 / ((float)fadeInTime / 1000);
@@ -157,12 +192,32 @@ public partial class HitCircle : Area2D {
 		animationPlayer.Play("fadein");
 	}
 
-	public void fadeOutHit() {
+	public void fadeOut() {
 		animationPlayer.Play("fadeout");
 	}
 
-	public void fadeOutHitSlider() {
+	public void fadeOutSlider() {
 		animationPlayer.Play("fadeoutslider");
+
+        if (isSlider) { // this should ALWAYS be ture
+            // slider end hitsound
+
+            // sliders do hitsounds differently
+            // lets get the last edge hitsound
+
+            if (slider.edgeHitsounds != null && slider.edgeAdditions != null) {
+                HitsoundManager.playHitsound(
+                    slider.edgeHitsounds[slider.edgeHitsounds.Count - 1],
+                    slider.edgeAdditions[slider.edgeAdditions.Count - 1].Item1,
+                    slider.edgeAdditions[slider.edgeAdditions.Count - 1].Item2,
+                    volume
+                );
+            }
+            else {
+                // no hitsounds, this will just play the default hitsound with no additions
+                HitsoundManager.playHitsound(hitsound, sampleSet, additionSet, volume);
+            }
+        }
 	}
 
 	public void AnimationFinished(string name) {
@@ -170,33 +225,30 @@ public partial class HitCircle : Area2D {
             // remove the slider from the scene tree
             if (isSlider) {
                 if (name != "hit") {
-                    GetParent().GetParent().RemoveChild(slider);
                     slider.QueueFree();
                 }
             }
             else {
-                GetParent().RemoveChild(this);
                 QueueFree();
             }
 		}
 
 		if (name == "fadein") {
-			if (GameManager.mode == GameMode.Replay) {
-				objectHit();
-			}
-			else {
-				if (isSlider) {
-					Timer t = new Timer();
-					t.WaitTime = slider.timeLength / 1000;
-					t.OneShot = true;
-					t.Connect("timeout", new Callable(this, "fadeOutHit"));
-					AddChild(t);
-					t.Start();
-				}
-				else {
-					fadeOutHit();
-				}
-			}
+            fadedIn = true;
+            if (isSlider) {
+                Timer t = new Timer();
+                t.WaitTime = slider.timeLength / 1000;
+                t.OneShot = true;
+                t.Connect("timeout", new Callable(this, "fadeOut"));
+                AddChild(t);
+                t.Start();
+            }
+            else {
+                //fadeOut();
+            }
+            if (GameManager.mode != GameMode.Auto) {
+                /**/objectHit();/**/
+            }
 		}
 	}
 
@@ -269,9 +321,15 @@ public partial class HitCircle : Area2D {
 		}
 	}
 
-	public void setHitsoundSettings(OsuParsers.Enums.Beatmaps.HitSoundType _hitsound, OsuParsers.Enums.Beatmaps.SampleSet sampleSet_, float volume_) {
+	public void setHitsoundSettings(
+        OsuParsers.Enums.Beatmaps.HitSoundType _hitsound,
+        OsuParsers.Enums.Beatmaps.SampleSet sampleSet_,
+        OsuParsers.Enums.Beatmaps.SampleSet additionSet_,
+        float volume_
+    ) {
 		hitsound = _hitsound;
 		sampleSet = sampleSet_;
+        additionSet = additionSet_;
 		volume = volume_;
 	}
 }

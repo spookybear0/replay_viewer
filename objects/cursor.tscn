@@ -1,20 +1,73 @@
-[gd_scene load_steps=4 format=3 uid="uid://c87vsxclkry7a"]
+[gd_scene load_steps=8 format=3 uid="uid://c87vsxclkry7a"]
 
 [ext_resource type="Script" path="res://scripts/Cursor.cs" id="1_2r238"]
 [ext_resource type="Texture2D" uid="uid://kqkfs5bbunty" path="res://assets/cursor.png" id="2_li7lf"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ahl7m"]
-size = Vector2(1, 1)
+[sub_resource type="Curve2D" id="Curve2D_4e3d3"]
 
-[node name="Cursor" type="Node2D"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_xq316"]
+radius = 1.0
+
+[sub_resource type="Animation" id="Animation_aqeqd"]
+resource_name = "followPath"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PathFollow2D:progress_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
+[sub_resource type="Animation" id="Animation_k5i0h"]
+resource_name = "goToHitCricle"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2gqxt"]
+_data = {
+"followPath": SubResource("Animation_aqeqd"),
+"goToHitCricle": SubResource("Animation_k5i0h")
+}
+
+[node name="Cursor" type="Path2D"]
+curve = SubResource("Curve2D_4e3d3")
 script = ExtResource("1_2r238")
 
-[node name="CursorSprite" type="Sprite2D" parent="."]
+[node name="PathFollow2D" type="PathFollow2D" parent="."]
+
+[node name="CursorArea" type="Area2D" parent="PathFollow2D"]
+
+[node name="Hitbox" type="CollisionShape2D" parent="PathFollow2D/CursorArea"]
+shape = SubResource("CircleShape2D_xq316")
+
+[node name="CursorSprite" type="Sprite2D" parent="PathFollow2D"]
 texture = ExtResource("2_li7lf")
 
-[node name="CursorArea" type="Area2D" parent="."]
-visible = false
-
-[node name="Hitbox" type="CollisionShape2D" parent="CursorArea"]
-visible = false
-shape = SubResource("RectangleShape2D_ahl7m")
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_2gqxt")
+}

@@ -3,7 +3,10 @@ using System;
 
 
 public partial class HitsoundManager : Node2D {
-    static AudioStreamPlayer audioStreamPlayer;
+    static AudioStreamPlayer normalPlayer;
+    static AudioStreamPlayer whistlePlayer;
+    static AudioStreamPlayer finishPlayer;
+    static AudioStreamPlayer clapPlayer;
 
     static AudioStream drumHitClap;
     static AudioStream drumHitFinish;
@@ -30,10 +33,25 @@ public partial class HitsoundManager : Node2D {
     static AudioStream softHitSliderWhistle;
 
     public override void _Ready() {
-        audioStreamPlayer = new AudioStreamPlayer();
-        AddChild(audioStreamPlayer);
-        audioStreamPlayer.Name = "HitsoundPlayer";
-        audioStreamPlayer.VolumeDb = -20;
+        normalPlayer = new AudioStreamPlayer();
+        AddChild(normalPlayer);
+        normalPlayer.Name = "HitsoundPlayer Normal";
+        normalPlayer.VolumeDb = -15;
+
+        whistlePlayer = new AudioStreamPlayer();
+        AddChild(whistlePlayer);
+        whistlePlayer.Name = "HitsoundPlayer Whistle";
+        whistlePlayer.VolumeDb = -15;
+
+        finishPlayer = new AudioStreamPlayer();
+        AddChild(finishPlayer);
+        finishPlayer.Name = "HitsoundPlayer Finish";
+        finishPlayer.VolumeDb = -15;
+
+        clapPlayer = new AudioStreamPlayer();
+        AddChild(clapPlayer);
+        clapPlayer.Name = "HitsoundPlayer Clap";
+        clapPlayer.VolumeDb = -15;
 
         // store hitsounds
 
@@ -62,78 +80,104 @@ public partial class HitsoundManager : Node2D {
         softHitSliderWhistle = ResourceLoader.Load<AudioStream>("res://assets/sounds/soft-slidertick.wav");
     }
 
-    public static void playHitsound(OsuParsers.Enums.Beatmaps.HitSoundType hitsound, OsuParsers.Enums.Beatmaps.SampleSet sampleSet, float volume) {
+    public static void playHitsound(
+        OsuParsers.Enums.Beatmaps.HitSoundType hitsound,
+        OsuParsers.Enums.Beatmaps.SampleSet sampleSet,
+        OsuParsers.Enums.Beatmaps.SampleSet additionSet,
+        float volume
+    ) {
         // TODO: volume
 
         switch (sampleSet) {
             case OsuParsers.Enums.Beatmaps.SampleSet.Drum:
-                audioStreamPlayer.Stream = drumHitNormal;
+                normalPlayer.Stream = drumHitNormal;
                 break;
             case OsuParsers.Enums.Beatmaps.SampleSet.Normal:
-                audioStreamPlayer.Stream = normalHitNormal;
+                normalPlayer.Stream = normalHitNormal;
                 break;
             case OsuParsers.Enums.Beatmaps.SampleSet.Soft:
-                audioStreamPlayer.Stream = softHitNormal;
+                normalPlayer.Stream = softHitNormal;
                 break;
             default:
                 break;
         }
 
-        audioStreamPlayer.Play();
+        normalPlayer.Play();
 
 		if (hitsound.HasFlag(OsuParsers.Enums.Beatmaps.HitSoundType.Whistle)) {
             bool playSound = true;
-            switch (sampleSet) {
+
+            OsuParsers.Enums.Beatmaps.SampleSet actualSet = sampleSet;
+
+            if (additionSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                actualSet = additionSet;
+            }
+
+            switch (actualSet) {
                 case OsuParsers.Enums.Beatmaps.SampleSet.Drum:
-                    audioStreamPlayer.Stream = drumHitWhistle;
+                    whistlePlayer.Stream = drumHitWhistle;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Normal:
-                    audioStreamPlayer.Stream = normalHitWhistle;
+                    whistlePlayer.Stream = normalHitWhistle;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Soft:
-                    audioStreamPlayer.Stream = softHitWhistle;
+                    whistlePlayer.Stream = softHitWhistle;
                     break;
                 default:
                     playSound = false;
                     break;
             }
-            if (playSound) audioStreamPlayer.Play();
+            if (playSound) whistlePlayer.Play();
 		}
 		if (hitsound.HasFlag(OsuParsers.Enums.Beatmaps.HitSoundType.Finish)) {
             bool playSound = true;
-			switch (sampleSet) {
+
+            OsuParsers.Enums.Beatmaps.SampleSet actualSet = sampleSet;
+
+            if (additionSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                actualSet = additionSet;
+            }
+
+			switch (actualSet) {
                 case OsuParsers.Enums.Beatmaps.SampleSet.Drum:
-                    audioStreamPlayer.Stream = drumHitFinish;
+                    finishPlayer.Stream = drumHitFinish;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Normal:
-                    audioStreamPlayer.Stream = normalHitFinish;
+                    finishPlayer.Stream = normalHitFinish;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Soft:
-                    audioStreamPlayer.Stream = softHitFinish;
+                    finishPlayer.Stream = softHitFinish;
                     break;
                 default:
                     playSound = false;
                     break;
             }
-            if (playSound) audioStreamPlayer.Play();
+            if (playSound) finishPlayer.Play();
 		}
 		if (hitsound.HasFlag(OsuParsers.Enums.Beatmaps.HitSoundType.Clap)) {
             bool playSound = true;
-			switch (sampleSet) {
+
+            OsuParsers.Enums.Beatmaps.SampleSet actualSet = sampleSet;
+
+            if (additionSet != OsuParsers.Enums.Beatmaps.SampleSet.None) {
+                actualSet = additionSet;
+            }
+
+			switch (actualSet) {
                 case OsuParsers.Enums.Beatmaps.SampleSet.Drum:
-                    audioStreamPlayer.Stream = drumHitClap;
+                    clapPlayer.Stream = drumHitClap;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Normal:
-                    audioStreamPlayer.Stream = normalHitClap;
+                    clapPlayer.Stream = normalHitClap;
                     break;
                 case OsuParsers.Enums.Beatmaps.SampleSet.Soft:
-                    audioStreamPlayer.Stream = softHitClap;
+                    clapPlayer.Stream = softHitClap;
                     break;
                 default:
                     playSound = false;
                     break;
             }
-            if (playSound) audioStreamPlayer.Play();
+            if (playSound) clapPlayer.Play();
 		}
     }
 }

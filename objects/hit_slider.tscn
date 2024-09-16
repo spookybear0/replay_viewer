@@ -1,10 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://c0h2l6fyaytkv"]
+[gd_scene load_steps=25 format=3 uid="uid://c0h2l6fyaytkv"]
 
 [ext_resource type="Script" path="res://scripts/HitSlider.cs" id="1_kipkw"]
 [ext_resource type="PackedScene" uid="uid://bi05wifikthea" path="res://objects/hit_circle.tscn" id="2_c3tet"]
 [ext_resource type="Shader" path="res://objects/slider_outline.gdshader" id="3_8albi"]
 [ext_resource type="Texture2D" uid="uid://bk0fmvpwymo14" path="res://assets/white_pixel.png" id="4_4dunc"]
 [ext_resource type="Shader" path="res://objects/slider_color.gdshader" id="4_desdd"]
+[ext_resource type="Texture2D" uid="uid://cxrn8t7ns3rrw" path="res://assets/reversearrow.png" id="6_w1ljq"]
+[ext_resource type="Texture2D" uid="uid://bueayf7asushy" path="res://assets/sliderfollowcircle.png" id="7_vxxrs"]
+[ext_resource type="Texture2D" uid="uid://bsnxymwhcidha" path="res://assets/sliderb0.png" id="8_mrjp1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_48ywg"]
 shader = ExtResource("3_8albi")
@@ -284,6 +287,17 @@ tracks/7/keys = {
 "points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
 "times": PackedFloat32Array(0, 1)
 }
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("../Path2D/PathFollow2D/AutomaticFollowCircle:modulate:a")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
 
 [sub_resource type="Animation" id="Animation_h2qg6"]
 resource_name = "fadeoutslider"
@@ -294,6 +308,17 @@ tracks/0/path = NodePath("../CanvasGroup:self_modulate:a")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../Path2D/PathFollow2D/AutomaticFollowCircle:modulate:a")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
 "handle_modes": PackedInt32Array(0, 0),
 "points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
 "times": PackedFloat32Array(0, 1)
@@ -444,6 +469,17 @@ tracks/12/keys = {
 "points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
 "times": PackedFloat32Array(0)
 }
+tracks/13/type = "bezier"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("../Path2D/PathFollow2D/AutomaticFollowCircle:modulate:a")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8ya8a"]
 _data = {
@@ -453,6 +489,110 @@ _data = {
 "hit": SubResource("Animation_6awgh")
 }
 
+[sub_resource type="Animation" id="Animation_1jhtg"]
+resource_name = "fadein"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Repeat:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
+[sub_resource type="Animation" id="Animation_ywmxq"]
+resource_name = "fadeout"
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Repeat:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hy0ce"]
+_data = {
+"fadein": SubResource("Animation_1jhtg"),
+"fadeout": SubResource("Animation_ywmxq")
+}
+
+[sub_resource type="Animation" id="Animation_h66ff"]
+resource_name = "fadein"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Repeat2:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
+[sub_resource type="Animation" id="Animation_r028h"]
+resource_name = "fadeout"
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Repeat2:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_iyq6x"]
+_data = {
+"fadein": SubResource("Animation_h66ff"),
+"fadeout": SubResource("Animation_r028h")
+}
+
+[sub_resource type="Animation" id="Animation_b8pt1"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Path2D/PathFollow2D:progress_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_1fuyb"]
+resource_name = "follow"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Path2D/PathFollow2D:progress_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6mnuy"]
+_data = {
+"RESET": SubResource("Animation_b8pt1"),
+"follow": SubResource("Animation_1fuyb")
+}
+
 [node name="HitSlider" type="Node2D"]
 script = ExtResource("1_kipkw")
 
@@ -460,11 +600,29 @@ script = ExtResource("1_kipkw")
 show_behind_parent = true
 z_index = 5
 
+[node name="Outline" parent="HitCircle" index="0"]
+scale = Vector2(1, 1)
+
+[node name="Overlay" parent="HitCircle" index="1"]
+scale = Vector2(1, 1)
+
+[node name="Shader" parent="HitCircle" index="2"]
+scale = Vector2(1, 1)
+
 [node name="ApproachCircle" parent="HitCircle" index="4"]
 modulate = Color(1, 1, 1, 2)
 scale = Vector2(2, 2)
 
+[node name="Repeat" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0)
+texture = ExtResource("6_w1ljq")
+
+[node name="Repeat2" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0)
+texture = ExtResource("6_w1ljq")
+
 [node name="CanvasGroup" type="CanvasGroup" parent="."]
+show_behind_parent = true
 material = SubResource("ShaderMaterial_48ywg")
 use_mipmaps = true
 
@@ -482,10 +640,39 @@ end_cap_mode = 2
 round_precision = 10
 antialiased = true
 
+[node name="Path2D" type="Path2D" parent="."]
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Path2D"]
+rotates = false
+cubic_interp = false
+
+[node name="FollowCircle" type="Sprite2D" parent="Path2D/PathFollow2D"]
+visible = false
+texture = ExtResource("7_vxxrs")
+
+[node name="AutomaticFollowCircle" type="Sprite2D" parent="Path2D/PathFollow2D"]
+modulate = Color(1, 1, 1, 0)
+texture = ExtResource("8_mrjp1")
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 root_node = NodePath("../HitCircle")
 libraries = {
 "": SubResource("AnimationLibrary_8ya8a")
+}
+
+[node name="AnimationPlayerRepeat" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_hy0ce")
+}
+
+[node name="AnimationPlayerRepeat2" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_iyq6x")
+}
+
+[node name="AnimationPlayerFollowCircle" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_6mnuy")
 }
 
 [editable path="HitCircle"]

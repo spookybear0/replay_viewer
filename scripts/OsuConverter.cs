@@ -9,27 +9,27 @@ public partial class OsuConverter : Node2D {
     }
 
     public static Vector2 OsuPixelToGodotPixel(Vector2 osuPixel) {
-        return new Vector2(osuPixel.X*1.33333333333333f+234, osuPixel.Y*1.33333333333333f+64.8f);
+        return new Vector2(osuPixel.X*(4/3)+234, osuPixel.Y*(4/3)+64.8f);
     }
 
     public static Vector2 OsuPixelToGodotPixel(float x, float y) {
-        return new Vector2(x*1.33333333333333f+234, y*1.33333333333333f+64.8f);
+        return new Vector2(x*(4/3)+234, y*(4/3)+64.8f);
     }
 
     public static Vector2 OsuPixelToGodotPixel(System.Numerics.Vector2 osuPixel) {
-        return new Vector2(osuPixel.X*1.33333333333333f+234, osuPixel.Y*1.33333333333333f+64.8f);
+        return new Vector2(osuPixel.X*(4/3)+234, osuPixel.Y*(4/3)+64.8f);
     }
 
     public static Vector2 GodotPixelToOsuPixel(Vector2 godotPixel) {
-        return new Vector2((godotPixel.X-234)/1.33333333333333f, (godotPixel.Y-64.8f)/1.33333333333333f);
+        return new Vector2((godotPixel.X-234)/(4/3), (godotPixel.Y-64.8f)/(4/3));
     }
 
     public static Vector2 GodotPixelToOsuPixel(float x, float y) {
-        return new Vector2((x-234)/1.33333333333333f, (y-64.8f)/1.33333333333333f);
+        return new Vector2((x-234)/(4/3), (y-64.8f)/(4/3));
     }
 
     public static Vector2 GodotPixelToOsuPixel(System.Numerics.Vector2 godotPixel) {
-        return new Vector2((godotPixel.X-234)/1.33333333333333f, (godotPixel.Y-64.8f)/1.33333333333333f);
+        return new Vector2((godotPixel.X-234)/(4/3), (godotPixel.Y-64.8f)/(4/3));
     }
 
     public static float PlayfieldHeight() {

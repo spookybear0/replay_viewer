@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bi05wifikthea"]
+[gd_scene load_steps=12 format=3 uid="uid://bi05wifikthea"]
 
 [ext_resource type="Script" path="res://scripts/HitCircle.cs" id="1_666q6"]
 [ext_resource type="Texture2D" uid="uid://du1wx4lyq7nvx" path="res://assets/hitcircle.png" id="2_mxnjl"]
@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://baq0oicghnisq" path="res://assets/approachcircle.png" id="6_ueu6q"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_oi3ix"]
-radius = 122.0
+radius = 185.0
 
 [sub_resource type="Animation" id="Animation_r7emq"]
 resource_name = "fadein"
@@ -404,34 +404,8 @@ tracks/12/keys = {
 "times": PackedFloat32Array(0)
 }
 
-[sub_resource type="Animation" id="Animation_q4p8w"]
-length = 0.001
-tracks/0/type = "bezier"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("ApproachCircle:scale:x")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"handle_modes": PackedInt32Array(0),
-"points": PackedFloat32Array(6, -0.25, 0, 0.25, 0),
-"times": PackedFloat32Array(0)
-}
-tracks/1/type = "bezier"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("ApproachCircle:scale:y")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"handle_modes": PackedInt32Array(0),
-"points": PackedFloat32Array(6, -0.25, 0, 0.25, 0),
-"times": PackedFloat32Array(0)
-}
-
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_hdgbr"]
 _data = {
-"RESET": SubResource("Animation_q4p8w"),
 "fadein": SubResource("Animation_r7emq"),
 "fadeout": SubResource("Animation_44lbd"),
 "hit": SubResource("Animation_ipc0v")
@@ -442,12 +416,15 @@ script = ExtResource("1_666q6")
 metadata/_edit_group_ = true
 
 [node name="Outline" type="Sprite2D" parent="."]
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_mxnjl")
 
 [node name="Overlay" type="Sprite2D" parent="."]
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("3_uwjj2")
 
 [node name="Shader" type="Sprite2D" parent="."]
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("4_roxci")
 
 [node name="Combo" type="Sprite2D" parent="."]
@@ -475,7 +452,6 @@ scale = Vector2(2, 2)
 texture = ExtResource("5_hy8k8")
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]
-visible = false
 shape = SubResource("CircleShape2D_oi3ix")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
